@@ -3,10 +3,12 @@ from fusesoc.capi2.generator import Generator
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 
 class SwervConfigGenerator(Generator):
     def run(self):
+        script_root = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), '..'))
         files = [
             {"configs/snapshots/default/common_defines.vh" : {
                 "copyto"    : "config/common_defines.vh",
@@ -21,14 +23,14 @@ class SwervConfigGenerator(Generator):
                 "file_type" : "systemVerilogSource"}}]
 
         tmp_dir = os.path.join(tempfile.mkdtemp(), 'core')
-        shutil.copytree(self.files_root, tmp_dir)
+        shutil.copytree(script_root, tmp_dir)
 
         cwd = tmp_dir
 
         env = os.environ.copy()
         env['RV_ROOT'] = tmp_dir
         args = ['configs/swerv.config'] + self.config.get('args', [])
-        rc = subprocess.call(args, cwd=cwd, env=env)
+        rc = subprocess.call(args, cwd=cwd, env=env, stdout=subprocess.DEVNULL)
         if rc:
             exit(1)
 
