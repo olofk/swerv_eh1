@@ -81,6 +81,12 @@ filesets:
     files: [vivado.tcl : {file_type : tclSource}]
 
 targets:
+  default:
+    filesets :
+      - includes
+      - "tool_modelsim ? (def_is_user)"
+      - "!tool_modelsim ? (def_is_sv)"
+      - rtl
   lint:
     default_tool: verilator
     filesets : [includes, def_is_sv, rtl]
@@ -102,7 +108,8 @@ targets:
       - tb
       - "tool_verilator? (verilator_tb)"
 
-    generate : [swerv_default_config]
+    generate : [swerv_ahb_config]
+    parameters : [ifu_mem_file, lsu_mem_file]
     tools:
       modelsim:
         vlog_options :
@@ -124,13 +131,20 @@ targets:
     toplevel : swerv_wrapper
 
 generate:
-  swerv_default_config:
+  swerv_ahb_config:
     generator: swerv_config
     position : first
     parameters:
       args : ['-ahb_lite']
+
+  swerv_default_config:
+    generator: swerv_config
+    position : first
+    parameters:
+      args : []
 generators:
   swerv_config:
     interpreter: python
     command: configs/swerv_config_gen.py
     description : Create a SweRV configuration. Note! Only supports the default config
+
